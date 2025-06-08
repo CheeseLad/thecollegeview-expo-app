@@ -28,65 +28,117 @@ interface ArticleListProps {
   enableCategory?: boolean;
 }
 
+// Debounce helper
+const debounce = (func: (...args: any[]) => void, delay: number) => {
+  let timeoutId: ReturnType<typeof setTimeout>;
+  return (...args: any[]) => {
+    clearTimeout(timeoutId);
+    timeoutId = setTimeout(() => func(...args), delay);
+  };
+};
+
+
 export default function ArticleList({ initialCategory = null, enableSearch = false, enableCategory = false }: ArticleListProps) {
   const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [searching, setSearching] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(initialCategory);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
   const router = useRouter();
   const { toggleSave, isSaved } = useSavedArticles();
 
-  const buildUrl = (query = '', category: number | null = null) => {
+  const perPage = 10; // Number of articles per page
+
+  const buildUrl = (query = '', category: number | null = null, pageNum = 1) => {
     const categoryFilter = category ? `&categories=${category}` : '';
     const searchFilter = query ? `&search=${encodeURIComponent(query)}` : '';
-    return `https://thecollegeview.ie/wp-json/wp/v2/posts/?${categoryFilter}${searchFilter}&_fields=id,date,title,content,link,author,featured_media`;
+    return `https://thecollegeview.ie/wp-json/wp/v2/posts/?${categoryFilter}${searchFilter}&_fields=id,date,title,content,link,author,featured_media&page=${pageNum}&per_page=${perPage}`;
   };
 
-  const fetchArticles = async (query = '', isSearch = false, category: number | null = null) => {
-    if (isSearch) setSearching(true);
-    else setLoading(true);
+  const fetchArticles = async (query = '', isSearch = false, category: number | null = null, pageNum = 1, append = false) => {
+    if (pageNum === 1) {
+      if (isSearch) setSearching(true);
+      else setLoading(true);
+    } else {
+      setLoadingMore(true);
+    }
 
     try {
-      const url = buildUrl(query, category);
+      const url = buildUrl(query, category, pageNum);
       const response = await fetch(url);
-      const data = await response.json();
-      setArticles(data);
+
+      if (!response.ok) {
+        // If 400 or 404, probably no more pages
+        if (response.status === 400 || response.status === 404) {
+          setHasMore(false);
+          return;
+        }
+        throw new Error('Network response was not ok');
+      }
+
+      const data: Article[] = await response.json();
+
+      if (append) {
+        setArticles(prev => [...prev, ...data]);
+      } else {
+        setArticles(data);
+      }
+
+      // If fewer articles than perPage, no more pages
+      setHasMore(data.length === perPage);
     } catch (error) {
       console.error(error);
+      setHasMore(false);
     } finally {
-      if (isSearch) setSearching(false);
-      else setLoading(false);
+      if (pageNum === 1) {
+        if (isSearch) setSearching(false);
+        else setLoading(false);
+      } else {
+        setLoadingMore(false);
+      }
     }
   };
 
-  // Debounce helper
-  const debounce = (func: (...args: any[]) => void, delay: number) => {
-    let timeoutId: ReturnType<typeof setTimeout>;
-    return (...args: any[]) => {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => func(...args), delay);
-    };
-  };
-
-  // Memoized debounced fetch for searching
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedFetch = useCallback(debounce(fetchArticles, 500), []);
-
+  // Reset page and fetch when category or search changes
   useEffect(() => {
-    fetchArticles('', false, selectedCategory);
-  }, [selectedCategory]);
+    setPage(1);
+    setHasMore(true);
 
-  useEffect(() => {
-    if (!enableSearch) return;
-
-    if (searchQuery.trim() === '') {
-      fetchArticles('', false, selectedCategory);
+    if (!enableSearch || searchQuery.trim() === '') {
+      fetchArticles('', false, selectedCategory, 1, false);
     } else {
-      debouncedFetch(searchQuery, true, selectedCategory);
+      debouncedFetch(searchQuery, true, selectedCategory, 1, false);
     }
-  }, [searchQuery, debouncedFetch, selectedCategory, enableSearch]);
+  }, [selectedCategory, searchQuery]);
+
+  // Debounced fetch with pagination and append flag
+  const debouncedFetch = useCallback(
+    debounce(
+      (query: string, isSearch: boolean, category: number | null, pageNum: number, append: boolean) =>
+        fetchArticles(query, isSearch, category, pageNum, append),
+      500
+    ),
+    []
+  );
+
+
+  // Load more when end reached
+  const loadMore = () => {
+    if (loadingMore || loading || searching || !hasMore) return;
+
+    const nextPage = page + 1;
+    setPage(nextPage);
+
+    if (!enableSearch || searchQuery.trim() === '') {
+      fetchArticles('', false, selectedCategory, nextPage, true);
+    } else {
+      debouncedFetch(searchQuery, true, selectedCategory, nextPage, true);
+    }
+  };
 
   const extractTextFromHtml = (html: string) => html.replace(/<[^>]*>/g, '');
 
@@ -139,7 +191,6 @@ export default function ArticleList({ initialCategory = null, enableSearch = fal
         />
       )}
 
-      {/* Example category filter UI (can be expanded or styled) */}
       {enableCategory && (
         <View style={styles.categoryFilterContainer}>
         <TouchableOpacity onPress={() => setSelectedCategory(null)} style={styles.categoryButton}>
@@ -166,7 +217,14 @@ export default function ArticleList({ initialCategory = null, enableSearch = fal
         keyExtractor={(item) => item.id.toString()}
         renderItem={renderItem}
         contentContainerStyle={{ paddingBottom: 100 }}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          loadingMore ? <ActivityIndicator style={{ margin: 16 }} /> : null
+        }
       />
+
+      {(loading || searching) && <ActivityIndicator style={{ marginTop: 20 }} />}
       {searching && (
         <View style={styles.searchingOverlay}>
           <ActivityIndicator size="small" color="#000" />

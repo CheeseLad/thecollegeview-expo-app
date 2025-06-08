@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { StatusBar } from 'expo-status-bar';
 import { SavedArticlesProvider } from '../context/SavedArticlesContext';
 
 export default function RootLayout() {
@@ -7,6 +8,7 @@ export default function RootLayout() {
       <Stack>
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
       </Stack>
+      <StatusBar style="light" />
     </SavedArticlesProvider>
   );
 }
