@@ -21,36 +21,27 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Articles',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
+            <Ionicons name={focused ? 'newspaper' : 'newspaper-outline'} color={color} size={24} />
           ),
         }}
       />
       <Tabs.Screen
-        name="about"
+        name="categories"
         options={{
-          title: 'About',
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'information-circle' : 'information-circle-outline'} color={color} size={24}/>
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="screen"
-        options={{
-          title: 'Screen',
+          title: 'Categories',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'image' : 'image-outline'} color={color} size={24} />
           ),
         }}
       />
       <Tabs.Screen
-        name="articles"
+        name="search"
         options={{
-          title: 'Articles',
+          title: 'Search',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'newspaper' : 'newspaper-outline'} color={color} size={24} />
+            <Ionicons name={focused ? 'search' : 'search-outline'} color={color} size={24} />
           ),
         }}
       />
@@ -64,11 +55,11 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="search"
+        name="about"
         options={{
-          title: 'Search',
+          title: 'About',
           tabBarIcon: ({ color, focused }) => (
-            <Ionicons name={focused ? 'search' : 'search-outline'} color={color} size={24} />
+            <Ionicons name={focused ? 'information-circle' : 'information-circle-outline'} color={color} size={24}/>
           ),
         }}
       />

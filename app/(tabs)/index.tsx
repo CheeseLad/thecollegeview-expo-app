@@ -1,30 +1,7 @@
-import { Link } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import React from 'react';
+import ArticleList from '../../components/ArticleList';
 
 export default function Index() {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Home screen</Text>
-      <Link href="/about" style={styles.button}>
-        Go to About screen
-      </Link>
-    </View>
-  );
+  // Assume category 3 is passed or hardcoded for demo
+  return <ArticleList enableSearch={false} enableCategory={false} />;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#25292e',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  text: {
-    color: '#fff',
-  },
-  button: {
-    fontSize: 20,
-    textDecorationLine: 'underline',
-    color: '#fff',
-  },
-});
