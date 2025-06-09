@@ -12,6 +12,8 @@ import {
   View,
 } from 'react-native';
 import { useSavedArticles } from '../context/SavedArticlesContext';
+import { decodeHTMLEntities } from '../utils/decodeHTMLEntities'; // Adjust path if needed
+import CategoryFilter from './CategoryFilter';
 
 interface Article {
   id: number;
@@ -47,6 +49,7 @@ export default function ArticleList({ initialCategory = null, enableSearch = fal
   const [selectedCategory, setSelectedCategory] = useState<number | null>(initialCategory);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
+  const categoryIds = [4, 7, 5, 687, 6, 220, 68, 9890, 90, 6880];
 
   const router = useRouter();
   const { toggleSave, isSaved } = useSavedArticles();
@@ -157,14 +160,14 @@ export default function ArticleList({ initialCategory = null, enableSearch = fal
           <FeaturedImage mediaId={item.featured_media} />
           <View style={styles.content}>
             <Text style={styles.title} numberOfLines={2} ellipsizeMode="tail">
-              {item.title.rendered}
+              {decodeHTMLEntities(item.title.rendered)}
             </Text>
             <Text style={styles.meta}>{formattedDate}</Text>
             <AuthorName authorId={item.author} />
           </View>
         </View>
         <Text numberOfLines={3} ellipsizeMode="tail">
-          {previewText}
+          {decodeHTMLEntities(previewText)}
         </Text>
         <TouchableOpacity onPress={() => toggleSave(item)} style={{ marginTop: 6 }}>
           <FontAwesome
@@ -192,24 +195,13 @@ export default function ArticleList({ initialCategory = null, enableSearch = fal
       )}
 
       {enableCategory && (
-        <View style={styles.categoryFilterContainer}>
-        <TouchableOpacity onPress={() => setSelectedCategory(null)} style={styles.categoryButton}>
-          <Text style={[styles.categoryText, selectedCategory === null && styles.categorySelected]}>
-            All Articles
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setSelectedCategory(4)} style={styles.categoryButton}>
-          <Text style={[styles.categoryText, selectedCategory === 4 && styles.categorySelected]}>
-            Features
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setSelectedCategory(7)} style={styles.categoryButton}>
-          <Text style={[styles.categoryText, selectedCategory === 7 && styles.categorySelected]}>
-            Irish & Languages
-          </Text>
-        </TouchableOpacity>
-        {/* Add more categories as needed */}
-      </View>
+            <View style={styles.categoryFilterContainer}>
+      <CategoryFilter
+        categoryIds={categoryIds}
+        selectedCategory={selectedCategory}
+        setSelectedCategory={setSelectedCategory}
+      />
+    </View>
       )}
 
       <FlatList
