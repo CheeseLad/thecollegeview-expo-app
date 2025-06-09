@@ -86,10 +86,11 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   footerContainer: {
-    flex: 1 / 3,
-    alignItems: 'center',
-    width: '100%',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
     paddingHorizontal: 20,
+    width: '100%',
   },
   optionsContainer: {
     position: 'absolute',

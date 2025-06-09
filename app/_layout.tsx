@@ -6,7 +6,7 @@ export default function RootLayout() {
   return (
     <SavedArticlesProvider>
       <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />r
       </Stack>
       <StatusBar style="light" />
     </SavedArticlesProvider>

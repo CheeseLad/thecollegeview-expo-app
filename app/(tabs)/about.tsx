@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { ActivityIndicator, Dimensions, Image, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import RenderHTML from 'react-native-render-html';
+
+
 
 export default function CombinedScreen() {
   const [aboutHtml, setAboutHtml] = useState(null);
@@ -38,14 +40,26 @@ export default function CombinedScreen() {
     );
   }
 
+  const screenWidth = Dimensions.get('window').width;
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-      <Text style={styles.heading}>About</Text>
+
+      
+    <Image
+      source={{ uri: 'https://thecollegeview.ie/wp-content/uploads/2025/02/cropped-12.png' }}
+      style={{
+        width: screenWidth,
+        aspectRatio: 3, // Adjust based on your image's actual width/height ratio
+        alignSelf: 'center',
+      }}
+      resizeMode="contain"
+    />
+
       <RenderHTML contentWidth={width} source={{ html: aboutHtml }} baseStyle={styles.htmlText} />
 
       <View style={styles.separator} />
 
-      <Text style={styles.heading}>Contact</Text>
       <RenderHTML contentWidth={width} source={{ html: contactHtml }} baseStyle={styles.htmlText} />
     </ScrollView>
   );

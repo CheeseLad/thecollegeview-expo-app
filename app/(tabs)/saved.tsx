@@ -19,7 +19,7 @@ export default function SavedScreen() {
       keyExtractor={(item) => item.id.toString()}
       renderItem={({ item }) => (
         <View style={{ margin: 10, backgroundColor: '#fff', padding: 15, borderRadius: 10 }}>
-          <Text style={{ fontWeight: 'bold' }}>{item.title.rendered}</Text>
+          <Text style={{ fontWeight: 'bold' }}>{item.id} - {item.title.rendered}</Text>
           <Text numberOfLines={2}>
             {item.content.rendered.replace(/<[^>]+>/g, '')}
           </Text>
